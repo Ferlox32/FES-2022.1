@@ -1,0 +1,8 @@
+Atividade 1:
+Sim, pois os núcleos que processam cada thread tem cargas diferentes em diferentes momentos, logo as threads acabam entrando numa espécie de "fila" para esperar o momento em que possam ser processadas.
+Atividade 2:
+Agora as threads anunciam quando terminam sua tarefa possibilitando diferenciar entre o "Hello World" de cada uma.
+Atividade 3:
+Sim, agora aparecem apenas informações adicionais, como o número total de threads.
+Atividade 4:
+Agora a thread principal aguarda todas as outras thread terminarem para continuar o processamento.
