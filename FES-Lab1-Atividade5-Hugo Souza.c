@@ -65,20 +65,25 @@ int main() {
     }
   }
 
+  int x = 0;
+
   for (thread=0; thread<NTHREADS; thread++) {
     if (pthread_join(tid_sistema[thread], NULL)) {
          printf("--ERRO: pthread_join() \n"); exit(-1); 
+         for(int i = 0; i < sizeof vetor; i++){
+            if(vetor[i] == i * i){
+                continue;
+            }else{
+                printf("%d = %d?",vetor[i],i);
+                x++;
+                //printf("Erro!");
+            }
+        }
     } 
   }
-  
-  printf("\nElementos 0 - 10:\n");
-  for(int i = 0; i < 10; i++){
-      printf("%d ", vetor[i]);
-  }
-  
-  printf("\n\nElementos 5000 - 5010:\n");
-  for(int i = 5000; i < 5010; i++){
-      printf("%d ", vetor[i]);
+
+  if(x == 0){
+    printf("Certo!");  
   }
 
   printf("\n\n--Thread principal terminou\n");
