@@ -26,15 +26,16 @@ int ehPrimo(int n){
 //fluxo das threads
 void *processaPrimos(void* arg){
     double* vetorLocal = (double *) arg;
-    while(int i = 0 < dim){
+    int i = 0;
+    while(i < dim){
         //garante que s so aumentara em uma thread por vez
         pthread_mutex_lock(&mutex);
         i = s++;
         pthread_mutex_unlock(&mutex);
-        if (ehPrimo(vetor[i])
-            vetorS[i] = sqrt(vetor[i]);
+        if (ehPrimo(vetor[i]))
+            vetorLocal[i] = sqrt(vetor[i]);
         else
-            vetorS[i] = vetor[i];
+            vetorLocal[i] = vetor[i];
     }
     pthread_exit(NULL);
 }
@@ -69,8 +70,8 @@ int main(int argc, char *argv[])
 
     //soma sequencial dos elementos
     GET_TIME(ini);
-    for (long long int i = 0; i < N; i++){
-        if (ehPrimo(vetor[i])
+    for (long long int i = 0; i < dim; i++){
+        if (ehPrimo(vetor[i]))
             vetorS[i] = sqrt(vetor[i]);
         else
             vetorS[i] = vetor[i];
