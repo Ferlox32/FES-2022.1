@@ -4,17 +4,18 @@
 #include <math.h>
 #include "timer.h"
 
-long long int N, iGlobal = 0;
-int nthreads;    // numero de threads
-int *vetor;   // vetor de entrada com dimensao dim
-pthread_mutex_t lock;
+long long int dim;
+int nthreads; //numero de threads
+int *vetor; //vetor de entrada com dimensao dim
+long long int s = 0;
+pthread_mutex_t mutex;
 
 int ehPrimo(int n){
-    double raiz = sqrt(n);
+    double root = sqrt(n);
     if(n <= 2){
         return 0;
     }
-    for(int i = 2; i <= raiz; i++){
+    for(int i = 2; i <= root; i++){
         if (!(n % i)){
             return 0;
         }
@@ -22,65 +23,63 @@ int ehPrimo(int n){
     return 1;
 }
 
-// fluxo das threads
-void *tarefa(void* arg)
-{
+//fluxo das threads
+void *processaPrimos(void* arg){
     double* vetorLocal = (double *) arg;
-    // soma os elementos do bloco da thread
-    int i = 0;
-    while(i < N){
-        //fazer
-        pthread_mutex_lock(&lock);
-        i = iGlobal++;
-        pthread_mutex_unlock(&lock);
-        vetorLocal[i] = ehPrimo(vetor[i]) ? sqrt(vetor[i]) : vetor[i];
+    while(int i = 0 < dim){
+        //garante que s so aumentara em uma thread por vez
+        pthread_mutex_lock(&mutex);
+        i = s++;
+        pthread_mutex_unlock(&mutex);
+        if (ehPrimo(vetor[i])
+            vetorS[i] = sqrt(vetor[i]);
+        else
+            vetorS[i] = vetor[i];
     }
-    // retorna o resultado da soma local
     pthread_exit(NULL);
 }
 
-// fluxo principal
+//fluxo principal
 int main(int argc, char *argv[])
 {
-    double ini, fim; // tomada de tempo
-    pthread_t *tid;                   // identificadores das threads no sistema
-    double timeSeq, timeConc;
-    float * vetorSeq, * vetorConc;
+    double ini, fim; //tomada de tempo
+    pthread_t *tid; //identificadores das threads no sistema
+    float * vetorS, * vetorC; //valor de retorno das threads
+    double tempoS, tempoC;
 
-    // recebe e valida os parametros de entrada (dimensao do vetor, numero de threads)
-    if (argc < 3)
-    {
+    //recebe e valida os parametros de entrada (dimensao do vetor, numero de threads)
+    if (argc < 3){
         fprintf(stderr, "Digite: %s <dimensao do vetor> <numero threads>\n", argv[0]);
         return 1;
     }
-    N = atoll(argv[1]);
+    dim = atoll(argv[1]);
     nthreads = atoi(argv[2]);
-    // aloca o vetor de entrada
-    vetor = (int *)malloc(sizeof(int) * N);
-    if (vetor == NULL)
-    {
+    //aloca o vetor de entrada
+    vetor = (int *)malloc(sizeof(int) * dim);
+    if (vetor == NULL){
         fprintf(stderr, "ERRO--malloc\n");
         return 2;
     }
-    vetorSeq = (float *)malloc(sizeof(float) *  N);
-    vetorConc = (float *)malloc(sizeof(float) *  N);
+    vetorS = (float *)malloc(sizeof(float) *  dim);
+    vetorC = (float *)malloc(sizeof(float) *  dim);
+    //preenche o vetor de entrada
     srand(time(NULL));
-    // preenche o vetor de entrada
-    for (long int i = 0; i < N; i++)
-        vetor[i] = rand() % N;
+    for (long int i = 0; i < dim; i++)
+        vetor[i] = rand() % dim;
 
-    // analise sequencial dos elementos
+    //soma sequencial dos elementos
     GET_TIME(ini);
     for (long long int i = 0; i < N; i++){
-        //fazer
-        vetorSeq[i] = ehPrimo(vetor[i]) ? sqrt(vetor[i]) : vetor[i];
+        if (ehPrimo(vetor[i])
+            vetorS[i] = sqrt(vetor[i]);
+        else
+            vetorS[i] = vetor[i];
     }
-
     GET_TIME(fim);
-    timeSeq = fim - ini;
-    printf("Tempo sequencial:  %lf\n", timeSeq);
+    tempoS = fim - ini;
+    printf("Tempo sequencial:  %lf\n", tempoS);
 
-    // analise concorrente dos elementos
+    //soma concorrente dos elementos
     GET_TIME(ini);
     tid = (pthread_t *)malloc(sizeof(pthread_t) * nthreads);
     if (tid == NULL)
@@ -88,34 +87,30 @@ int main(int argc, char *argv[])
         fprintf(stderr, "ERRO--malloc\n");
         return 2;
     }
-    // criar as threads
-    pthread_mutex_init(&lock, NULL);
-    for (long int i = 0; i < nthreads; i++)
-    {
-        if (pthread_create(tid + i, NULL, tarefa, (void *)vetorConc))
-        {
+    //criar as threads
+    pthread_mutex_init(&mutex, NULL);
+    for (long int i = 0; i < nthreads; i++){
+        if (pthread_create(tid + i, NULL, processaPrimos, (void *)vetorC)){
             fprintf(stderr, "ERRO--pthread_create\n");
             return 3;
         }
     }
-    // aguardar o termino das threads
-    for (long int i = 0; i < nthreads; i++)
-    {
-        if (pthread_join(*(tid + i), NULL))
-        {
+    //aguardar o termino das threads
+    for (long int i = 0; i < nthreads; i++){
+        if (pthread_join(*(tid + i), NULL)){
             fprintf(stderr, "ERRO--pthread_create\n");
             return 3;
         }
     }
-    pthread_mutex_destroy(&lock);
+    pthread_mutex_destroy(&mutex);
     GET_TIME(fim);
-    timeConc = fim - ini;
-    printf("Tempo concorrente:  %lf\n", timeConc);
+    tempoC = fim - ini;
+    printf("Tempo concorrente:  %lf\n", tempoC);
 
-    // exibir os resultados
-    printf("Aceleração: %lf\n", timeSeq/timeConc);
+    //exibir os resultados
+    printf("Tempo Sequencial / Tempo Concorrente: %lf\n", tempoS/tempoC);
 
-    // libera as areas de memoria alocadas
+    //libera as areas de memoria alocadas
     free(vetor);
     free(tid);
 
