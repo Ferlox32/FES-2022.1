@@ -12,7 +12,7 @@ pthread_mutex_t mutex;
 
 int ehPrimo(int n){
     double root = sqrt(n);
-    if(n <= 2){
+    if(n < 2){
         return 0;
     }
     for(int i = 2; i <= root; i++){
