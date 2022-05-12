@@ -15,7 +15,10 @@ int ehPrimo(int n){
     if(n < 2){
         return 0;
     }
-    for(int i = 2; i <= root; i++){
+    if(n == 2){
+      return 1;
+    }
+    for(int i = 3; i <= root; i+= 2){
         if (!(n % i)){
             return 0;
         }
